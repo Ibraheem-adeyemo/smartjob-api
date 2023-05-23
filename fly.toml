@@ -1,0 +1,29 @@
+# fly.toml app configuration file generated for smartjob-api on 2023-04-26T10:40:06+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "smartjob-api"
+primary_region = "jnb"
+
+[deploy]
+  release_command = "./node_modules/.bin/sequelize db:migrate"
+
+[env]
+  DATABASE_ENVIRONMENT = "production"
+  NODE_ENV = "production"
+  NODE_MAILER_HOST = "smtp.gmail.com"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+
+[checks]
+  [checks.alive]
+    type = "tcp"
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "5s"
