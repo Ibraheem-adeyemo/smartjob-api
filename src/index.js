@@ -13,7 +13,7 @@ import sequelize from './utils/database';
 import serviceRoute from './routes/serviceRoute';
 import { errorHandler } from './middlewares/errorHandlers';
 import workRoute from './routes/workRoute';
-import addressRoute from './routes/addressRoute';
+import addressRoute from './routes/addressRoute'; 
 
 
 const app = express();

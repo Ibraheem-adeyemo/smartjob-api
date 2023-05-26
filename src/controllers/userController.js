@@ -23,9 +23,13 @@ const signupController = async (req, res, next) => {
         let user
         const { host } = req.headers;
         const {name, email, password, username} = req.body
+        if(!name || !email || !password) {
+            next({status:400, message: 'you must provide your full name, email and password before you can create an account'});
+            return
+        }
+
         const [firstName, lastName] = name.split(' ')
         const userObj = {firstName, lastName, email, password, username }
-
         if(username) {
             user = User.findOne({where: {username}}) 
             if(user.username) {
@@ -33,11 +37,10 @@ const signupController = async (req, res, next) => {
                 return
             }
         }
-        
         let { error, value} = authSchema.validate(userObj)
         
-        if(error) return next(new ErrorResponse(error.details, 400))
-
+        if(error) return next({status:400, message: error.details[0].message})
+        
         const emailExist = await User.findOne({where:{email}})
 
         if(emailExist) {
@@ -83,7 +86,7 @@ const signupController = async (req, res, next) => {
         Responses.setSuccess(201,msg, {jwtToken, data: {...user.dataValues, password:''}});
         Responses.send(res)  
     } catch (error) {
-        next({message:constStrings.databaseError, statusCode:500})
+        next({message:error && error.message ? error.message :constStrings.databaseError, statusCode:500})
     }
 }
 

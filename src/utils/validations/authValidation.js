@@ -6,8 +6,8 @@ const email = Joi.string().trim().lowercase().email().required().label('email is
     
 
 export const authSchema = Joi.object().keys({
-    firstName:name.min(2).max(30).label('firstname is required, must be alphabets only and have at least 2 characters'),
-    lastName:name.min(2).max(30).label('lastname is required, must be alphabets only and have at least 2 characters'),
+    firstName:name.min(2).max(30).label('name is required, must be a combination of both first and last name seperated with a single keyboard space. Alphabets only and have at least 2 characters'),
+    lastName:name.min(2).max(30).label('name is required, must be a combination of both first and last name seperated with a single keyboard space. Alphabets only and have at least 2 characters'),
     password:password,
     email:email,
     username: Joi.string().trim().min(3)
