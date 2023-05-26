@@ -1,9 +1,9 @@
 import { constStrings } from "../constants";
 import { addOTPtoDB, createUser, findUserByEmail, getAuserWithPK, login, udpdateUser } from "../services/user";
 import { ErrorResponse } from "../utils/ErrorResponse"
-import { composeCourierVerificationMail, composeVerificationMail, courierMailSender, generateOTP, generateToken, hashPassword, sendEmail, sendMail, sendSmsOtp, transporter, verifyToken } from "../utils/helpers"
+import { comparePassword, composeCourierVerificationMail, composeVerificationMail, courierMailSender, generateOTP, generateToken, hashPassword, sendEmail, sendMail, sendSmsOtp, transporter, verifyToken } from "../utils/helpers"
 import Responses from "../utils/Responses"
-import { authSchema, loginSchema } from "../utils/validations/authValidation";
+import { authSchema, loginSchema, passwordSchema } from "../utils/validations/authValidation";
 import {UserActivation } from '../../dbase/models'
 import { generateRandomString } from "../utils/function";
 import { User, Profile } from '../../dbase/models'
@@ -16,7 +16,9 @@ import { PHONE_ALREADY_EXISTS_ERR,
      ACCOUNT_HAS_ALREADY_VERIFIED,
      PHONE_OTP_SENT, ACCOUNT_HAS_NOT_BEEN_VERIFIED,
      EMAIIL_CAN_NOT_BE_FOUND,
-     INCORECT_OTP, LOGIN_SUCCESSFUL } from '../constants'
+     INCORECT_OTP, LOGIN_SUCCESSFUL,
+     PROVIDE_EMAIL,
+     USER_NOT_FOUND_ERR } from '../constants'
 
 const signupController = async (req, res, next) => {
     try {
@@ -95,17 +97,26 @@ const loginController = async (req, res, next) => {
         const {email, password} = req.body
        
         const userObj = {email, password}
-
         let {error, value} = loginSchema.validate(userObj)
 
         if(error) return next(new ErrorResponse(error.message, 400))
 
-        
-        const userRes = await login(userObj)
+        const userRes = await User.findOne({ where: { email }})//(userObj)
 
+        if(!userRes) {
+            return next({statusCode:404, message:USER_NOT_FOUND_ERR})
+        }
+        
         if(!userRes.isVerified) {
             return next({statusCode:400, message:ACCOUNT_HAS_NOT_BEEN_VERIFIED})
         }
+
+        const isPasswordCorrect = await comparePassword(password,userRes.password)
+
+        if(!isPasswordCorrect) {
+            return next({statusCode:401, message:'Either password or email is not correct'})
+        }
+
         
         const token = generateToken({id: userRes.id, email:userRes.email})
         const data = {
@@ -121,7 +132,6 @@ const loginController = async (req, res, next) => {
         Responses.setSuccess(200, LOGIN_SUCCESSFUL, {token, data});
         Responses.send(res)
     } catch (error) {
-        console.log(JSON.parse(JSON.stringify(error)), 3)
         next({message:constStrings.databaseError, statusCode:500})
     }
 }
@@ -130,6 +140,10 @@ const verifyOTPController = async (req, res, next) => {
     try {
         const { otp } = req.body;
         const user = res.locals.user;
+
+        if(!otp) {
+            return next({status:403, message: 'The OTP provided is not correct'});
+        }
 
         const userActivation = await UserActivation.findOne({
             where:{userId:user.id}
@@ -143,7 +157,7 @@ const verifyOTPController = async (req, res, next) => {
             next({status:403,message:INCORECT_OTP})
             return
         }
-        UserActivation.destroy({where:{userId:user.id}})
+        await UserActivation.destroy({where:{userId:user.id}})
         await User.update(
             {isVerified:true},
             {where:{id:user.id}})
@@ -212,13 +226,17 @@ const resendEmailVerificationOTP = async (req, res, next) => {
         const { host } = req.headers;
         const {email} = req.body
 
+        if(!email){
+            return next({statusCode:400, message:'Kindly provide the email you registered with'})
+        }
+
         const user = await User.findOne({where:{email}})
 
         if(!user || user.email !== email) {
             return next({statusCode:404, message: EMAIIL_CAN_NOT_BE_FOUND})
         }
 
-        UserActivation.destroy({where:{userId:user.id}})
+        await UserActivation.destroy({where:{userId:user.id}})
 
         const jwtToken = generateToken({email:user.email, id:user.id})
 
@@ -245,7 +263,7 @@ const resendEmailVerificationOTP = async (req, res, next) => {
         Responses.send(res)
     } catch (error) {
         console.log(error)
-        next({message:error.message, statusCode:401})
+        next({message:error.message, statusCode:500})
     }
 }
 
@@ -272,42 +290,75 @@ const resendVerificationLinkController = async (req, res, next) => {
     try {
         let token
         const { host } = req.headers
+        
+        const { targertMail } = req.body //?.targertMail
 
-        token = { targertMail } = req.params
+        if(!targertMail) {
+            return next({status:400, message: PROVIDE_EMAIL});
+        }
+        
+        const userRes = await User.findOne({ where:{email:targertMail}}) //findUserByEmail(targertMail)
 
-        const userRes = findUserByEmail(targertMail)
+        if(!userRes) {
+            return next({status:404, message: EMAIIL_CAN_NOT_BE_FOUND})
+        }
 
-        const {msg, verifyUser} = constStrings
+        if(userRes.isVerified) {
+            return next({status:419, message: 'Your account is verified already'});
+        }
+
+        const userVerifiedData = await UserActivation.findOne({
+            where: {userId:userRes.id}
+        })
+        const {msg, verifyUser} = constStrings;
+
+        const emailData = {
+            recipientEmail:userRes.email,
+            otp:userVerifiedData.otp,
+            userId:userRes.id,
+            // host,
+            // userFullName:name
+        }
+        
         token = generateToken({email:userRes.email, id:userRes.id})
 
-        sendMail(userRes.email, host, token, verifyUser)
+        sendMail(emailData, verifyUser)
         
         Responses.setSuccess(201,msg, {token});
         Responses.send(res)
     } catch (error) {
+        console.log(error)
         next({message:constStrings.databaseError, statusCode:500})
     }  
 
 }
 
-const forgetPasswordController = async (req, res) => {
+const forgetPasswordController = async (req, res, next) => {
     try {
         const { host } = req.headers
         const { email } = req.body
 
+        if(!email) {
+            return next({statusCode:400, message: PROVIDE_EMAIL})
+        }
         const userRes = await findUserByEmail(email)
 
         if(!userRes) {
-            next({message:'User could not be found', statusCode:404})
+            next({message:USER_NOT_FOUND_ERR, statusCode:404})
         }
         const secret = process.env.SECRET + userRes.password
         
         const token = generateToken({email:userRes.email, id:userRes.id}, secret);
-        const randomString = generateRandomString(60);
+        // const randomString = generateRandomString(60);
+
+        const otp = generateOTP(6)
+
+        await  addOTPtoDB(otp, userRes.id)
 
         const emailData = {
             recipientEmail:userRes.email,
-            hashedSecret:token,
+            // hashedSecret:token,
+            otp,
             userId:'',
             host,
             userFullName:'User'
@@ -321,27 +372,79 @@ const forgetPasswordController = async (req, res) => {
         Responses.send(res)
         
     } catch (error) {
+        console.log(error.message)
         next({message:constStrings.databaseError, statusCode:500})
+    }
+}
+
+const resetPasswordOTP = async (req, res, next) => {
+    try {
+        const {otp} = req.body
+        const { user } = res.locals
+        // const payload = verifyToken(token, secret);
+
+        // const userRes = await getAuserWithPK(user.id)
+        // if(!userRes) {
+        //     next({message:'User could not be found', statusCode:404})
+        // }
+
+        const secret = process.env.SECRET
+        if(!otp) {
+            return next({statusCode:400, message: INCORECT_OTP});
+        }
+
+        const userActivationData = await UserActivation.findOne({
+            where:{userId:user.id}
+        })
+
+        if(!userActivationData || userActivationData.otp !== otp) {
+            return ({statusCode:400, message:'Please follow our normal process to reset password'})
+        }
+
+        // if(payload.id !== userActivationData.userID) {
+        //     next({message:'Unauthorized', statusCode:401})
+        // }
+        const newToken = generateToken({email:user.email, id:user.id}, secret);
+        Responses.setSuccess(200, {token:newToken, message: 'You can now reset your password'})
+        Responses.send(res)
+    } catch (error) {
+        console.log(error)
+        next({message:'There is error in redirect user to reset password page', statusCode:500})
     }
 }
 
 const resetPasswordController = async (req, res, next) => {
     try {
-        const {id, token} = req.params
-        const userRes = await getAuserWithPK(id)
-        if(!userRes) {
-            next({message:'User could not be found', statusCode:404})
+        
+        const {newPassword} = req.body
+        const { user } = res.locals
+
+        if(!newPassword) {
+            return next({statusCode:400, message:'Kindly provide correct  new password'});
         }
-        const secret = process.env.SECRET + userRes.password
-        const payload = verifyToken(token, secret);
-        if(id !== payload.id) {
-            next({message:'Unauthorized', statusCode:401})
+
+        const { error, value } = passwordSchema.validate({newPassword});
+
+        if(error) {
+            return next({statusCode:401, message:error.message.substring(1,120)})
         }
-        const newToken = generateToken({email:payload.email, id:userRes.id}, secret);
-        Responses.setSuccess(200, {token:newToken, message: 'You can now redirect to reset password page'})
-        Responses.send(res)
+
+        const hashedPassword = await hashPassword(value.newPassword);
+
+        const newUser = User.update({password:hashedPassword},{
+            where: {
+                email:user.email
+            },
+            returning:true,
+            plain:true}
+        )
+
+        Responses.setSuccess(201,'Password reset succesfully', {...newUser.dataValues, password:''});
+        Responses.send(res) 
+
+
     } catch (error) {
-        next({message:'There is error in redirect user to reset password page', statusCode:500})
+        next({message:error.message, statusCode:500})
     }
 }
 
@@ -355,5 +458,6 @@ export {
     verifyOTPController,
     registerPhoneNumberController,
     verifyPhoneController,
-    resendEmailVerificationOTP
+    resendEmailVerificationOTP,
+    resetPasswordOTP
 }

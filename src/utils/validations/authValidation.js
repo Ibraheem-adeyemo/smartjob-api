@@ -1,7 +1,7 @@
 import Joi from '@hapi/joi'
 
 const name = Joi.string().trim().required().regex(/^[A-Za-z]+$/)
-const password = Joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.{8,})/).label('password is required, must be at least 8 characters and must contain at least a number, one lowercase and one uppercase alphabet');
+export const password = Joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.{8,})/).label('password is required, must be at least 8 characters and must contain at least a number, one lowercase and one uppercase alphabet');
 const email = Joi.string().trim().lowercase().email().required().label('email is required, and should follow this format: myemail@domain.com');
     
 
@@ -14,7 +14,10 @@ export const authSchema = Joi.object().keys({
 })
 
 export const phoneNumber = Joi.string().regex(/^\+(?:[0-9] ?){6,14}[0-9]$/).required().label('PhoneNumber is required, and should follow this format: +234 70 0000000')
-     
+
+export const passwordSchema = Joi.object().keys({
+    newPassword:password
+})
 
 export const loginSchema = Joi.object().keys({
     password:password,

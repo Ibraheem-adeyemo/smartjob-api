@@ -68,6 +68,7 @@ export const isAuthenticated = async (req, res, next) => {
         }
 
         const payload = verifyToken(token);
+
         if(!payload) {
             next({status:403, message:JWT_DECODE_ERR});
             return
@@ -114,6 +115,7 @@ export const isEmailVerified = async (req, res, next) => {
         if(!user.isVerified) {
             return next({statusCode:400, message:ACCOUNT_HAS_NOT_BEEN_VERIFIED})
         }
+        res.locals.user = user;
         next()
     } catch (error) {
         next(error)

@@ -37,10 +37,14 @@ export const hashPassword = async (password) => {
     return await bcrypt.hash(password, 10)
 }
 
+export const comparePassword = async (passwd, hash) => {
+    return await bcrypt.compare(passwd, hash)
+}
+
 export const generateToken = (payload, jwtSecret=secret) => {
     console.log(payload)
     const token = jwt.sign(payload, jwtSecret, {
-        expiresIn: '1hr'
+        expiresIn: '12hr'
     })
     return token;
 }
@@ -145,11 +149,11 @@ export const composeVerificationMail = (emailData, mailType) => {
         case constStrings.forgetPassword:
             return {
                 recipientEmail: `${recipientEmail}`,
-                subject: 'Password reset link',
+                subject: 'Password reset OTP',
                 body: `<div>
-                Hi ${email} Kindly click on the link below to reset your password.<br /><br/>
-                <a href='${hostUrl}/api/v1/users/resetPassword/${userId}/${hashedSecret}'>Reset password</a> <br /> 
-                </div>`
+                Hi ${userFullName} Kindly copy and paste the OTP below to reset your password.<br /><br/>
+                your OTP is ${otp}
+                `
             }
         default:
             break;
@@ -203,6 +207,5 @@ export const courierMailSender = (emailData) => courier.send({
 export const sendMail = (emailData, mailType) => {
     
     const mailContent = composeVerificationMail(emailData, mailType )
-    console.log(mailContent)
     sendEmail(transporter(), mailContent)
 }
