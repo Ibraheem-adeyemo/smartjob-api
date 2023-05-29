@@ -37,6 +37,7 @@ exports.EMAIL_VERIFIED_SUCCESSFULLY = "Email has been verified"
 exports.USERNAME_IS_NOT_AVAILABLE = "The username has been taken"
 exports.PHONE_OTP_SENT = "Kindly copy and paste the OTP sent to your phone to continue"
 exports.GET_ALL_WORKS_SUCCESSFULLY = 'Get all works successfully'
+exports.GET_ALL_USERS_SUCCESSFULLY = 'Get all users successfully'
 exports.GET_WORK_SUCCESSFULLY = 'Get work successfully'
 exports.ADDRESS_CREATED_SUCCESSFULLY = 'Address is created successfully'
 exports.SERVICE_EXIST_ALREADY = 'You have alredy created this service you can update your service';

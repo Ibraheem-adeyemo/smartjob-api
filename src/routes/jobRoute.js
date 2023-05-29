@@ -11,6 +11,7 @@ import { uploads } from '../utils/helpers'
 const jobRoute = express.Router()
 
 jobRoute.post('/createAJob', uploads.single('imag'), createJobController)
+jobRoute.get('/getAllJobs', getAllJobsController)
 jobRoute.get('/getAllJobs/:searchTerm', getAllJobsController)
 jobRoute.get('/job/id', getASingleJobController)
 jobRoute.put('/editJob', editJobController)

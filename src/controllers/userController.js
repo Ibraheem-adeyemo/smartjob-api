@@ -18,7 +18,8 @@ import { PHONE_ALREADY_EXISTS_ERR,
      EMAIIL_CAN_NOT_BE_FOUND,
      INCORECT_OTP, LOGIN_SUCCESSFUL,
      PROVIDE_EMAIL,
-     USER_NOT_FOUND_ERR } from '../constants'
+     USER_NOT_FOUND_ERR,
+     GET_ALL_USERS_SUCCESSFULLY } from '../constants'
 
 const signupController = async (req, res, next) => {
     try {
@@ -446,6 +447,16 @@ const resetPasswordController = async (req, res, next) => {
     } catch (error) {
         next({message:error.message, statusCode:500})
     }
+} 
+const fetchUsersController = async (req, res, next) => {
+    try {
+        const allUsers = await User.findAll()
+
+        Responses.setSuccess(201, GET_ALL_USERS_SUCCESSFULLY, {data:allUsers})
+        Responses.send(res)
+    } catch (error) {
+        next({message:error.message, statusCode:500})
+    }
 }
 
 export {
@@ -459,5 +470,6 @@ export {
     registerPhoneNumberController,
     verifyPhoneController,
     resendEmailVerificationOTP,
-    resetPasswordOTP
+    resetPasswordOTP,
+    fetchUsersController
 }

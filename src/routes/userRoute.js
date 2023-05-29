@@ -9,7 +9,8 @@ import { signupController,
         registerPhoneNumberController,
         verifyPhoneController,
         resendEmailVerificationOTP,
-        resetPasswordOTP
+        resetPasswordOTP,
+        fetchUsersController
      } from '../controllers/userController';
 import { isUserExist, isAuthenticated, isPhoneNumberAlreadyExist, isEmailVerified } from '../middlewares/authMiddleware';
 
@@ -22,6 +23,7 @@ userRoute.post('/users/resetPasswordOTP', isEmailVerified, resetPasswordOTP)
 userRoute.post('/users/resetPassword', isAuthenticated, resetPasswordController)
 userRoute.post('/users/resendEmailVerificationLink', resendVerificationLinkController)
 userRoute.get('/users/verifyUser', verifyUserController)
+userRoute.get('/users/fetchUsers',isAuthenticated, fetchUsersController)
 userRoute.post('/users/verifyEmailOtp', isAuthenticated, verifyOTPController)
 userRoute.post('/users/registerPhoneNumber', isAuthenticated, isPhoneNumberAlreadyExist, registerPhoneNumberController)
 userRoute.post('/users/verifyPhone', isAuthenticated, verifyPhoneController)
