@@ -125,11 +125,15 @@ export const isEmailVerified = async (req, res, next) => {
 export const isPhoneNumberAlreadyExist = async (req, res, next) => {
     try {
         const {phoneNumber } = req.body
+        if(!phoneNumber) {
+            return next({statusCode:403, message:'Please provide a valid phone number'})
+        }
         const user = await User.findOne({where:{phoneNumber}})
         if(user) return next({status:403, message:PHONE_ALREADY_EXISTS_ERR})
         
         next()
     } catch (error) {
+        console.log(error)
         next(error)
     }
 }

@@ -3,7 +3,7 @@ import { createAServiceService } from "../services/serviceServices";
 import { Service, Address, Charges, ServiceType, sequelize } from '../../dbase/models'
 import { serviceSchema, updateServiceSchema } from "../utils/validations/serviceValidation";
 
-import { SERVICE_EXIST_ALREADY, ADDRESS_ALREADY_CREATED,SERVICE_NOT_FOUND, BAD_REQUEST, constStrings } from '../constants'
+import { SERVICE_EXIST_ALREADY, ADDRESS_ALREADY_CREATED,SERVICE_NOT_FOUND, BAD_REQUEST, GET_ALL_SERVICES_SUCCESSFULLY, constStrings } from '../constants'
 import { findUserAddress } from "../services/user";
 import { getNearestServiceSql } from "../utils/sqls/serviceSQL";
 import { createAddress } from "../services/addressService";
@@ -112,9 +112,21 @@ const createServiceController = async (req, res, next) => {
     }
 }
 
-const getAllServicesController = (req, res) => {
-    Responses.setSuccess(200, 'endpoint to get all Services')
-    Responses.send(res)
+const getAllServicesController = async (req, res, next) => {
+    try {
+        const allService = await Service.findAll({
+            include: [
+                {model: Address},
+                {model: Charges},
+                {model: ServiceType},
+            ]
+        })
+
+        Responses.setSuccess(201, GET_ALL_SERVICES_SUCCESSFULLY, allService)
+        Responses.send(res)
+    } catch (error) {
+        next({message:error.message, statusCode:500})
+    }
 }
 
 const updateServiceController = async (req, res, next) => {

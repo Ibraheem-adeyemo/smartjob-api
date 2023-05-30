@@ -9,7 +9,7 @@ export const getAllWorkController = async (req, res, next) => {
     try {
         const allWorks = await Work.findAll()
 
-        Responses.setSuccess(201, GET_ALL_WORKS_SUCCESSFULLY, {data:allWorks})
+        Responses.setSuccess(201, GET_ALL_WORKS_SUCCESSFULLY, allWorks)
         Responses.send(res)
     } catch (error) {
         next({message:constStrings.databaseError, statusCode:500})
@@ -21,7 +21,7 @@ export const getWorkByIdController = async (req, res, next) => {
         const id = req.params.id
         const work = await Work.findByPk(id)
 
-        Responses.setSuccess(201, GET_WORK_SUCCESSFULLY, {data:work})
+        Responses.setSuccess(201, GET_WORK_SUCCESSFULLY, work)
         Responses.send(res)
     } catch (error) {
         next({message:constStrings.databaseError, statusCode:500})

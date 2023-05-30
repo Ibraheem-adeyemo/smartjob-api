@@ -50,3 +50,4 @@ exports.SERVICE_NOT_FOUND = "Service is not found",
 exports.BAD_REQUEST = "Bad request"
 exports.LOGIN_SUCCESSFUL = "Login successful"
 exports.PROVIDE_EMAIL = "Kindly provide the mail you used to register"
+exports.GET_ALL_SERVICES_SUCCESSFULLY = "Get all services successfully"

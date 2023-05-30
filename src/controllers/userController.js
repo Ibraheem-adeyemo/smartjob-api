@@ -282,8 +282,8 @@ const registerPhoneNumberController = async (req, res, next) => {
         Responses.setSuccess(201, PHONE_OTP_SENT)
         Responses.send(res)
     } catch (error) {
-        // console.log(error)
-        next({message:constStrings.databaseError, statusCode:500})
+        console.log(error)
+        next({message:error.message, statusCode:500})
     }
 }
 

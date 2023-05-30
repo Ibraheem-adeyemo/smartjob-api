@@ -12,8 +12,8 @@ import { isAuthenticated } from '../middlewares/authMiddleware'
 const serviceRoute = express.Router()
 
 serviceRoute.post('/services/createAService', isAuthenticated, uploads.single('banners'), createServiceController)
-serviceRoute.get('/services/allJServices', getAllServicesController)
-serviceRoute.get('/services/aService/:id', createServiceController)
+serviceRoute.get('/services/allServices', isAuthenticated, getAllServicesController)
+serviceRoute.get('/services/services/:id', createServiceController)
 serviceRoute.put('/services/updateService', isAuthenticated, uploads.single('banners'), updateServiceController)
 serviceRoute.delete('/services/deleteAService/:id', deleteServiceController)
 serviceRoute.get('/services/nearest-services', nearRestServiceController )
