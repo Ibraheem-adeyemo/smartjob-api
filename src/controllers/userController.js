@@ -397,19 +397,20 @@ const resetPasswordOTP = async (req, res, next) => {
         const userActivationData = await UserActivation.findOne({
             where:{userId:user.id}
         })
-
+        
         if(!userActivationData || userActivationData.otp !== otp) {
-            return ({statusCode:400, message:'Please follow our normal process to reset password'})
+            return next({statusCode:400, message:'The OTP you sent is invalid'});
         }
 
         // if(payload.id !== userActivationData.userID) {
         //     next({message:'Unauthorized', statusCode:401})
         // }
+        
         const newToken = generateToken({email:user.email, id:user.id}, secret);
+        
         Responses.setSuccess(200, {token:newToken, message: 'You can now reset your password'})
         Responses.send(res)
     } catch (error) {
-        console.log(error)
         next({message:'There is error in redirect user to reset password page', statusCode:500})
     }
 }
