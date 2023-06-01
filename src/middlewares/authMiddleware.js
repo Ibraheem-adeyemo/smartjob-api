@@ -6,7 +6,9 @@ import { PHONE_ALREADY_EXISTS_ERR,
     AUTH_HEADER_MISSING_ERR, 
     AUTH_TOKEN_MISSING_ERR,
     USER_NOT_FOUND_ERR,
-    ACCOUNT_HAS_NOT_BEEN_VERIFIED } from '../constants'
+    BAD_REQUEST,
+    ACCOUNT_HAS_NOT_BEEN_VERIFIED,
+    NOT_AUTHORIZED } from '../constants'
 
 export const isUserExist = async (req, res, next) => {
     const {email } = req.body
@@ -94,9 +96,29 @@ export const isUserVerifiedAndAuthenticated = async (req, res, next) => {
         
         const user = await isAuthenticated(req, res, next)
         if(!user.isVerified) {
-            return next({statusCode:400, message:ACCOUNT_HAS_NOT_BEEN_VERIFIED})
+            return next({statusCode:400, message:BAD_})
         }
         res.locals.user = user;
+        next()
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const canDeleteAccount = async (req, res, next) => {
+    try {
+        const {user} = res.locals 
+        const userIdToDelete = req.params.userId.toString();
+
+        if(!userIdToDelete) {
+            return next({statusCode:400, message:BAD_REQUEST})
+        }
+
+        if(user?.id != userIdToDelete) {
+            return next({statusCode:403, message:NOT_AUTHORIZED})
+        }
+
+        res.locals.userIdToDelete = userIdToDelete
         next()
     } catch (error) {
         next(error)
