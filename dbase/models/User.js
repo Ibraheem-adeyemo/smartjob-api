@@ -28,6 +28,11 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Review)
       User.hasMany(models.Payment)
       User.hasOne(models.Profile)
+      User.hasOne(models.Address, {
+        foreignKey: 'userId',
+        targetKey:'id',
+        onDelete: 'CASCADE'
+      })
     }
 
     async matchPassword (enteredPassword) {
