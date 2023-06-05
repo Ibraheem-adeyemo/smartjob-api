@@ -6,7 +6,7 @@ import Responses from "../utils/Responses"
 import { authSchema, loginSchema, passwordSchema } from "../utils/validations/authValidation";
 import {UserActivation } from '../../dbase/models'
 import { generateRandomString } from "../utils/function";
-import { User, Profile } from '../../dbase/models'
+import { User, Profile, Address } from '../../dbase/models'
 
 const secret = process.env.SECRET
 
@@ -19,7 +19,8 @@ import { PHONE_ALREADY_EXISTS_ERR,
      INCORECT_OTP, LOGIN_SUCCESSFUL,
      PROVIDE_EMAIL,
      USER_NOT_FOUND_ERR,
-     GET_ALL_USERS_SUCCESSFULLY } from '../constants'
+     GET_ALL_USERS_SUCCESSFULLY,
+     USERS_DELETED_SUCCESSFULLY } from '../constants'
 
 const signupController = async (req, res, next) => {
     try {
@@ -453,9 +454,28 @@ const fetchUsersController = async (req, res, next) => {
     try {
         const allUsers = await User.findAll()
 
-        Responses.setSuccess(201, GET_ALL_USERS_SUCCESSFULLY, {data:allUsers})
+        Responses.setSuccess(200, GET_ALL_USERS_SUCCESSFULLY, {data:allUsers})
         Responses.send(res)
     } catch (error) {
+        next({message:error.message, statusCode:500})
+    }
+}
+
+const deleteUserController = async (req, res, next) => {
+    try {
+        
+        const {user, userIdToDelete } = res.locals;
+
+        const resData = await User.destroy({
+            where:{id:userIdToDelete},
+            include: { model: Address}
+        })
+
+        Responses.setSuccess(200, USERS_DELETED_SUCCESSFULLY, {resData})
+        Responses.send(res)
+    } catch (error) {
+
+        console.log(error)
         next({message:error.message, statusCode:500})
     }
 }
@@ -472,5 +492,6 @@ export {
     verifyPhoneController,
     resendEmailVerificationOTP,
     resetPasswordOTP,
-    fetchUsersController
+    fetchUsersController,
+    deleteUserController
 }
