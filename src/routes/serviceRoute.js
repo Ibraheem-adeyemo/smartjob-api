@@ -4,7 +4,8 @@ import {
     getAllServicesController,
     updateServiceController,
     deleteServiceController,
-    nearRestServiceController
+    nearRestServiceController,
+    editServiceController
 } from '../controllers/serviceController';
 import { uploads } from '../utils/helpers'
 import { isAuthenticated } from '../middlewares/authMiddleware'
@@ -17,6 +18,7 @@ serviceRoute.get('/services/services/:id', createServiceController)
 serviceRoute.put('/services/updateService', isAuthenticated, uploads.single('banners'), updateServiceController)
 serviceRoute.delete('/services/deleteAService/:id', deleteServiceController)
 serviceRoute.get('/services/nearest-services', nearRestServiceController )
+serviceRoute.patch('/services/update-service', isAuthenticated, editServiceController )
 
 
 export default serviceRoute;

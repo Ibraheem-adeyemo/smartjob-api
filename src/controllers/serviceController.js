@@ -134,9 +134,9 @@ const updateServiceController = async (req, res, next) => {
         
         const {user} = res.locals
         const {serviceId} = req.query
-        const {description, expertLevel,yearsOfExperience, status} = req.body
+        const {workId, description, expertLevel,yearsOfExperience,video, status} = req.body
 
-        const serviceObj = {description, expertLevel,yearsOfExperience, status}
+        const serviceObj = {description, expertLevel,yearsOfExperience, video, status, workId}
 
         const { err, value} = updateServiceSchema.validate(serviceObj)
 
@@ -160,7 +160,7 @@ const updateServiceController = async (req, res, next) => {
 
         const updatedService = await Service.findByPk(serviceId)
 
-        Responses.setSuccess(200, '', updatedService)
+        Responses.setSuccess(200, 'Updated successfully', updatedService)
         Responses.send(res)
     } catch (error) {
         next({message:error.message, statusCode:500})
@@ -219,10 +219,48 @@ const nearRestServiceController = async (req, res, next) => {
         next({message:error.message, statusCode:500})
     }
 }
+
+// This editservice controller needs to be critically look into seems it does not needed or wrongly inplemented
+
+const editServiceController = async (req, res, next) => {
+    try {
+        const {serviceId} = req.params;
+        const {feild, value} = req.body;
+        const {user} = res.locals;
+
+        if(feild === ('workId' || 'description' || 'location' || 'expertLevel' || 'yearsOfExperience' || 'video' || 'status')) {
+            return next({status:403, message:'This feild can not be editted'});
+        }
+
+        const service = await Service.findByPk(serviceId)
+
+        if(!service) {
+            return next({status:404, message:SERVICE_NOT_FOUND})
+        }
+
+        if(service.userId !== user.id) {
+            return next({status:400, message:BAD_REQUEST})
+        }
+
+        await Service.update(
+            {[feild]: value}, {where: {id:serviceId}}
+        )
+
+        const updatedService = await Service.findByPk(serviceId)
+
+        Responses.setSuccess(200, 'Updated successfully', updatedService)
+        Responses.send(res)
+
+
+    } catch (error) {
+        next({message:error.message, statusCode:500})
+    }
+}
 export {
     createServiceController,
     getAllServicesController,
     updateServiceController,
     deleteServiceController,
-    nearRestServiceController
+    nearRestServiceController,
+    editServiceController
 }
