@@ -30,5 +30,6 @@ userRoute.post('/users/registerPhoneNumber', isAuthenticated, isPhoneNumberAlrea
 userRoute.post('/users/verifyPhone', isAuthenticated, verifyPhoneController)
 userRoute.post('/users/resendEmailVerificationOTP', resendEmailVerificationOTP)
 userRoute.delete('/users/delete/:userId', isAuthenticated, canDeleteAccount, deleteUserController)
+// userRoute.post
 
 export default userRoute;

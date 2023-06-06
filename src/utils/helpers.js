@@ -25,7 +25,7 @@ const rapidAPIHost=process.env.RAPID_API_HOST
 // SET STORAGE
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/')
+    cb(null, 'uploads')
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname)

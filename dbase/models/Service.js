@@ -80,6 +80,10 @@ module.exports = (sequelize, DataTypes) => {
         type:DataTypes.ENUM,
         values: ['available','notavailable']
       },
+      advancePayment: {
+        allowNull: false,
+        type: DataTypes.FLOAT
+      },
       serviceCharges: {
         type: DataTypes.INTEGER
       },

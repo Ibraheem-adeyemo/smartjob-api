@@ -7,15 +7,15 @@ import { SERVICE_EXIST_ALREADY, ADDRESS_ALREADY_CREATED,SERVICE_NOT_FOUND, BAD_R
 import { findUserAddress } from "../services/user";
 import { getNearestServiceSql } from "../utils/sqls/serviceSQL";
 import { createAddress } from "../services/addressService";
+import { uploadToCloudinary } from "../utils/cloudinaryConfig";
 
 const createServiceController = async (req, res, next) => {
     try {
         const {user} = res.locals
-        const {workId, description,location,expertLevel,yearsOfExperience,video,serviceType,status,servicecharge,} = req.body
-        const banners = req?.file?.originalname;
+        const {workId, description,location,expertLevel,yearsOfExperience,video,serviceType,status,servicecharge, advancePayment} = req.body
+        const banners = req?.files;
 
-        const service = {workId, description,location,expertLevel,yearsOfExperience,serviceType,status,servicecharge,banners, userId:user.id}
-
+        const service = {workId, description,location,expertLevel,yearsOfExperience,serviceType,status,servicecharge,banners, userId:user.id, advancePayment}
         let { error, value} = serviceSchema.validate(service)
 
         if(error) {
@@ -35,7 +35,7 @@ const createServiceController = async (req, res, next) => {
         const serviceChargeObj = JSON.parse(servicecharge);
         const serviceTypeObj = JSON.parse(serviceType)
         
-        const serviceObj = {
+        let serviceObj = {
             workId,
             description,
             expertLevel,
@@ -44,9 +44,10 @@ const createServiceController = async (req, res, next) => {
             video,
             userId:user.id,
             banners,
+            advancePayment,
             location: typeof location == 'number' ? location : userHaveTheAddress.length > 0 ? userHaveTheAddress[0].id:null
         }
-
+        
         const userHasCreatedTheService = await Service.findOne({
             where: {
                 userId:user.id,
@@ -58,7 +59,15 @@ const createServiceController = async (req, res, next) => {
             next({status:403, message:SERVICE_EXIST_ALREADY});
             return
         }
-
+        let bannerCloudUrl = [];
+        for (const banner of banners) {
+            const cloudRes = await uploadToCloudinary(banner.path, 'services');
+            bannerCloudUrl.push(`${cloudRes.url.url}--pId${cloudRes.url.public_id}--asstId${cloudRes.url.asset_id}`)
+        }
+        
+        serviceObj = {
+            ...serviceObj, banners: bannerCloudUrl.toString(",")
+        }
         const newService = await Service.create(serviceObj) 
         
         let newAddress
@@ -105,7 +114,7 @@ const createServiceController = async (req, res, next) => {
             ]
         }
         )
-        Responses.setSuccess(200, 'you just created a Service', {serviceResponse});
+        Responses.setSuccess(200, 'you just created a Service', serviceResponse);
         Responses.send(res)
     } catch (error) {
         next({message:error.message, statusCode:500}) 
@@ -134,9 +143,9 @@ const updateServiceController = async (req, res, next) => {
         
         const {user} = res.locals
         const {serviceId} = req.query
-        const {description, expertLevel,yearsOfExperience, status} = req.body
+        const {workId, description, expertLevel,yearsOfExperience,video, status} = req.body
 
-        const serviceObj = {description, expertLevel,yearsOfExperience, status}
+        const serviceObj = {description, expertLevel,yearsOfExperience, video, status, workId}
 
         const { err, value} = updateServiceSchema.validate(serviceObj)
 
@@ -160,7 +169,7 @@ const updateServiceController = async (req, res, next) => {
 
         const updatedService = await Service.findByPk(serviceId)
 
-        Responses.setSuccess(200, '', updatedService)
+        Responses.setSuccess(200, 'Updated successfully', updatedService)
         Responses.send(res)
     } catch (error) {
         next({message:error.message, statusCode:500})
@@ -219,10 +228,48 @@ const nearRestServiceController = async (req, res, next) => {
         next({message:error.message, statusCode:500})
     }
 }
+
+// This editservice controller needs to be critically look into seems it does not needed or wrongly inplemented
+
+const editServiceController = async (req, res, next) => {
+    try {
+        const {serviceId} = req.params;
+        const {feild, value} = req.body;
+        const {user} = res.locals;
+
+        if(feild === ('workId' || 'description' || 'location' || 'expertLevel' || 'yearsOfExperience' || 'video' || 'status')) {
+            return next({status:403, message:'This feild can not be editted'});
+        }
+
+        const service = await Service.findByPk(serviceId)
+
+        if(!service) {
+            return next({status:404, message:SERVICE_NOT_FOUND})
+        }
+
+        if(service.userId !== user.id) {
+            return next({status:400, message:BAD_REQUEST})
+        }
+
+        await Service.update(
+            {[feild]: value}, {where: {id:serviceId}}
+        )
+
+        const updatedService = await Service.findByPk(serviceId)
+
+        Responses.setSuccess(200, 'Updated successfully', updatedService)
+        Responses.send(res)
+
+
+    } catch (error) {
+        next({message:error.message, statusCode:500})
+    }
+}
 export {
     createServiceController,
     getAllServicesController,
     updateServiceController,
     deleteServiceController,
-    nearRestServiceController
+    nearRestServiceController,
+    editServiceController
 }
