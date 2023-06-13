@@ -87,7 +87,7 @@ const signupController = async (req, res, next) => {
         // sendSmsOtp({phoneNumber:user.phoneNumber, OTP:`Your OTP is ${OTP}`}, next)
             
         // const courierRes = await courierMailSender({name:'', recipien: userEmail, content: composeCourierVerificationMail(userEmail, host, token)})
-        Responses.setSuccess(201,msg, {jwtToken, data: {...user.dataValues, password:''}});
+        Responses.setSuccess(201,msg, {token: jwtToken, userInfo: {...user.dataValues, password:''}});
         Responses.send(res)  
     } catch (error) {
         next({message:error && error.message ? error.message :constStrings.databaseError, statusCode:500})
@@ -131,7 +131,7 @@ const loginController = async (req, res, next) => {
         }
 
         const msg = constStrings.msg
-        Responses.setSuccess(200, LOGIN_SUCCESSFUL, {token, data});
+        Responses.setSuccess(200, LOGIN_SUCCESSFUL,{token, userInfo: {...data}});
         Responses.send(res)
     } catch (error) {
         next({message:constStrings.databaseError, statusCode:500})
@@ -151,10 +151,15 @@ const verifyOTPController = async (req, res, next) => {
             where:{userId:user.id}
         })
         
-        if(!userActivation) {
+        if(!userActivation && user.isVerified) {
             next({status:403, message:ACCOUNT_HAS_ALREADY_VERIFIED});
             return
         }
+        if(!userActivation && !user.isVerified) {
+            next({status:400, message:'Your account can not be verified.Request for resending OTP or use another email'});
+            return
+        }
+        
         if(userActivation.otp !== otp) {
             next({status:403,message:INCORECT_OTP})
             return
@@ -165,7 +170,8 @@ const verifyOTPController = async (req, res, next) => {
             {where:{id:user.id}})
         let updatedUser = await User.findByPk(user.id)
         const jwtToken = generateToken({email:user.email, id:user.id})
-        Responses.setSuccess(201,EMAIL_VERIFIED_SUCCESSFULLY, {jwtToken, data: {...updatedUser.dataValues, password:''}})
+        
+        Responses.setSuccess(201,EMAIL_VERIFIED_SUCCESSFULLY, {token: jwtToken, userInfo: {...updatedUser.dataValues, password:''}})
         Responses.send(res)
     } catch (error) {
         // console.log(error, '=======@@@@@@')
@@ -185,7 +191,7 @@ const verifyPhoneController = async (req, res, next) => {
         UserActivation.destroy({where:{userId:user.id}})
 
         await Profile.update({isPhoneNumberVerified:true},{where:{UserId:user.id}})
-        Responses.setSuccess(201,EMAIL_VERIFIED_SUCCESSFULLY, {data: {}})
+        Responses.setSuccess(201,EMAIL_VERIFIED_SUCCESSFULLY)
         Responses.send(res)
 
     } catch (error) {
@@ -326,7 +332,7 @@ const resendVerificationLinkController = async (req, res, next) => {
 
         sendMail(emailData, verifyUser)
         
-        Responses.setSuccess(201,msg, {token});
+        Responses.setSuccess(201,msg, token);
         Responses.send(res)
     } catch (error) {
         console.log(error)
@@ -406,6 +412,7 @@ const resetPasswordOTP = async (req, res, next) => {
         // if(payload.id !== userActivationData.userID) {
         //     next({message:'Unauthorized', statusCode:401})
         // }
+        await UserActivation.destroy({where:{userId:user.id}})
         
         const newToken = generateToken({email:user.email, id:user.id}, secret);
         
@@ -454,7 +461,7 @@ const fetchUsersController = async (req, res, next) => {
     try {
         const allUsers = await User.findAll()
 
-        Responses.setSuccess(200, GET_ALL_USERS_SUCCESSFULLY, {data:allUsers})
+        Responses.setSuccess(200, GET_ALL_USERS_SUCCESSFULLY, allUsers)
         Responses.send(res)
     } catch (error) {
         next({message:error.message, statusCode:500})

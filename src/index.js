@@ -14,6 +14,7 @@ import serviceRoute from './routes/serviceRoute';
 import { errorHandler } from './middlewares/errorHandlers';
 import workRoute from './routes/workRoute';
 import addressRoute from './routes/addressRoute'; 
+import bookingRoute from './routes/bookingsRoute';
 
 
 const app = express();
@@ -49,6 +50,7 @@ app.use(apiVersion, jobRoute)
 app.use(apiVersion, serviceRoute)
 app.use(apiVersion, workRoute)
 app.use(apiVersion, addressRoute)
+app.use(apiVersion, bookingRoute)
 
 app.get('/', (req, res) => {
     Responses.setSuccess(200, 'Welcome to your smart job portal');

@@ -14,22 +14,48 @@ module.exports = (sequelize, DataTypes) => {
       Booking.belongsTo(models.User, {
         foreignKey: 'bookedBy'
       })
-      Booking.belongsTo(models.User, {
-        foreignKey: 'worker'
-      })
+    //   Booking.belongsTo(models.User, {
+    //     foreignKey: 'worker'
+    //   })
       Booking.hasMany(models.BookingHistory)
       Booking.hasOne(models.Payment)
-      Booking.belongsTo(models.Service)
+      Booking.belongsTo(models.Service, {
+        foreignKey: 'bookedFor'
+      })
     }
   }
   Booking.init({
-    amountDeposited: DataTypes.FLOAT,
-    hourDepositedFor: DataTypes.FLOAT,
+    advancePayment: DataTypes.FLOAT,
+    // hourDepositedFor: DataTypes.FLOAT,
     status:{
         type:DataTypes.ENUM,
-        values:['started','done','settled','canceled','pending'],
+        values:['started','done','settled','canceled','in progres','pending', 'completed', 'available'],
         defaultValue:'pending'
     },
+    isBooked: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    date: {
+        type: DataTypes.DATE,
+        allowNull:false
+    },
+    time: {
+        type: DataTypes.TIME
+    },
+    recipientName: {
+        type: DataTypes.STRING
+    },
+    recipientPhonenumber: {
+        type: DataTypes.STRING
+    },
+    percentDone: {
+        type:DataTypes.INTEGER
+    },
+    isCompleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    }
     // need to remove this
     // bookedBy: {
     //     type: DataTypes.INTEGER

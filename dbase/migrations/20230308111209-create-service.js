@@ -9,11 +9,10 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-    //   title is removed because of the work id being specified
-    //   title: {
-    //     allowNull: true,
-    //     type: Sequelize.STRING
-    //   },
+      advancePayment: {
+        allowNull: false,
+        type: Sequelize.FLOAT
+      },
       workId: {
         type: Sequelize.INTEGER,
         references: {

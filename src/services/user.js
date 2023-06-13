@@ -60,8 +60,22 @@ export const findUserByEmail = (email) => {
     return User.findOne({ where:{email}})
 }
 
-export const addOTPtoDB = (otp, userId, expiredOn=Date.now()+21600000) => {
-    return UserActivation.create({otp, userId, expiredOn});
+export const addOTPtoDB = async (otp, userId, expiredOn=Date.now()+21600000) => {
+    try {
+        let otpRes = await UserActivation.findOne({
+            where: {userId}
+        });
+        if(otpRes) {
+          otpRes = await UserActivation.update({
+            otp, expiredOn
+          }, {where: {userId}})  
+        } else {
+            otpRes = await UserActivation.create({otp, userId, expiredOn})
+        }
+        return otpRes;
+    } catch (error) {
+        return error;
+    }
 }
 export const udpdateUser = async (email) => {
     return User.update(

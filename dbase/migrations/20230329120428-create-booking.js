@@ -9,18 +9,42 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      amountDeposited: {
+      advancePayment: {
         type: Sequelize.FLOAT,
         allowNull:false
       },
-      hourDepositedFor: {
-        type: Sequelize.FLOAT,
-        allowNull:false
-      },
+    //   hourDepositedFor: {
+    //     type: Sequelize.FLOAT,
+    //     allowNull:false
+    //   },
       status: {
         type: Sequelize.ENUM,
-        values:['started','done','settled','canceled','pending'],
+        values:['started','done','settled','canceled','in progres','pending','completed','available'],
         defaultValue:'pending'
+      },
+      isBooked: {
+        type:Sequelize.BOOLEAN,
+        defaultValue:false
+      },
+      date: {
+        type: Sequelize.DATE,
+        allowNull:false
+      },
+      time: {
+        type: Sequelize.TIME
+      },
+      recipientName: {
+        type: Sequelize.STRING
+      },
+      recipientPhonenumber: {
+        type: Sequelize.STRING
+      },
+      percentDone: {
+        type:Sequelize.INTEGER
+      },
+      isCompleted: {
+        type:Sequelize.BOOLEAN,
+        defaultValue: false
       },
       bookedBy: {
         type: Sequelize.INTEGER,
