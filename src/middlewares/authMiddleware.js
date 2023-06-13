@@ -55,6 +55,10 @@ export const isUserVerified = async (req, res, next) => {
     }
 }
 
+export const isEmailVerifiedAndAuthenticated = (req, res, next) => {
+
+}
+
 export const isAuthenticated = async (req, res, next) => {
     try {
         const { authorization } = req.headers
@@ -96,7 +100,7 @@ export const isUserVerifiedAndAuthenticated = async (req, res, next) => {
         
         const user = await isAuthenticated(req, res, next)
         if(!user.isVerified) {
-            return next({statusCode:400, message:BAD_})
+            return next({statusCode:400, message:ACCOUNT_HAS_NOT_BEEN_VERIFIED})
         }
         res.locals.user = user;
         next()

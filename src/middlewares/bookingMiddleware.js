@@ -12,6 +12,10 @@ export const canMakeBooking = async (req, res, next) => {
         // const serviceBooking = await Service.
         const serviceBooking = await Service.findByPk(bookedFor);
 
+        if(!serviceBooking) {
+            return next({statusCode:404, message:"Service does not exist" })
+        }
+
         if(user.id == serviceBooking.userId) {
             return next({statusCode:409, message:"You can't order or book your own service" })
         }
