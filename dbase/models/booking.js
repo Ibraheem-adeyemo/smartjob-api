@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     // hourDepositedFor: DataTypes.FLOAT,
     status:{
         type:DataTypes.ENUM,
-        values:['started','done','settled','canceled','in progres','pending', 'completed', 'available'],
+        values:['started','done','settled', 'in progres','pending', 'completed'],
         defaultValue:'pending'
     },
     isBooked: {
@@ -53,6 +53,14 @@ module.exports = (sequelize, DataTypes) => {
         type:DataTypes.INTEGER
     },
     isCompleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    isCanceled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    isAvailable: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     }

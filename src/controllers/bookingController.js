@@ -3,7 +3,7 @@ import { createAJobService, getAllJobsService } from "../services/jobServices";
 
 const createBookingController = async (req, res, next) => {
     try {
-        
+        const {advancePayment, date, time, recipientName, recipientPhonenumber, bookedFor } = req.body;
     } catch (error) {
         
     }

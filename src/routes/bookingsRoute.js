@@ -4,10 +4,11 @@ import {
 } from '../controllers/bookingController';
 import { uploads } from '../utils/helpers'
 import { isAuthenticated } from '../middlewares/authMiddleware'
+import { canMakeBooking } from '../middlewares/bookingMiddleware';
 
 const bookingRoute = express.Router()
 
-bookingRoute.post('/bookings/createBooking', isAuthenticated, createBookingController)
+bookingRoute.post('/bookings/createBooking', isAuthenticated, canMakeBooking, createBookingController)
 
 
 
