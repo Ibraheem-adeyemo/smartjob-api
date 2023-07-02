@@ -7,7 +7,8 @@ export const constStrings = {
     databaseError: 'Error from database',
     resetPasswordLinkSuccess: 'Reset password link has been sent to your mail if you have registered with the email account',
     forgetPassword:'forgetPassword',
-    verifyEmail:'verifyEmail'
+    verifyEmail:'verifyEmail',
+    bookingRequest:'bookingRequest'
 }
 
 exports.API_ENDPOINT_NOT_FOUND_ERR = "Api endpoint does not found";

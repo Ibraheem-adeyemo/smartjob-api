@@ -19,10 +19,14 @@ module.exports = {
     //   },
       status: {
         type: Sequelize.ENUM,
-        values:['started','done','settled','canceled','in progres','pending','completed','available'],
+        values:['started','done','settled','in progres','pending','completed'],
         defaultValue:'pending'
       },
       isBooked: {
+        type:Sequelize.BOOLEAN,
+        defaultValue:false
+      },
+      isAvailable: {
         type:Sequelize.BOOLEAN,
         defaultValue:false
       },
@@ -45,6 +49,14 @@ module.exports = {
       isCompleted: {
         type:Sequelize.BOOLEAN,
         defaultValue: false
+      },
+      isCanceled: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      isActive: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
       },
       bookedBy: {
         type: Sequelize.INTEGER,

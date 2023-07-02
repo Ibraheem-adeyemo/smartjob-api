@@ -134,7 +134,7 @@ export const transporter = () => nodemailer.createTransport({
 
 export const composeVerificationMail = (emailData, mailType) => {
     
-    const { recipientEmail, otp, userId, host, userFullName } = emailData
+    const { recipientEmail, otp='', userFullName ='' } = emailData
     
     switch (mailType) {
         case constStrings.verifyEmail:
@@ -153,13 +153,20 @@ export const composeVerificationMail = (emailData, mailType) => {
                 body: `<div>
                 Hi ${userFullName} Kindly copy and paste the OTP below to reset your password.<br /><br/>
                 your OTP is ${otp}
+                </div>
                 `
+            };
+        case constStrings.bookingRequest:
+            return {
+                recipientEmail: recipientEmail,
+                subject: 'Service request',
+                body: `<div> 
+                    ${emailData.message}
+                </div>`
             }
         default:
             break;
     }
-
-    
   }
 
   const courier = CourierClient({ authorizationToken: authToken });

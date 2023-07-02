@@ -29,10 +29,14 @@ module.exports = (sequelize, DataTypes) => {
     // hourDepositedFor: DataTypes.FLOAT,
     status:{
         type:DataTypes.ENUM,
-        values:['started','done','settled','canceled','in progres','pending', 'completed', 'available'],
+        values:['started','done','settled', 'in progres','pending', 'completed'],
         defaultValue:'pending'
     },
     isBooked: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    isAvailable: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
@@ -55,6 +59,14 @@ module.exports = (sequelize, DataTypes) => {
     isCompleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    isCanceled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     }
     // need to remove this
     // bookedBy: {

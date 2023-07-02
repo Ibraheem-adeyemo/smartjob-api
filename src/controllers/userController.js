@@ -52,11 +52,10 @@ const signupController = async (req, res, next) => {
             return
         }
         
-        const hashedPassword = await hashPassword(value.password)
+        // const hashedPassword = await hashPassword(password)
 
-        // // token should ve removed from the database
-        value = {...value, password:hashedPassword}
-
+        // // // token should ve removed from the database
+        // value = {...value, password:hashedPassword}
 
         // const userResponse = await createUser(value)
         user = await User.create(value);
@@ -114,7 +113,7 @@ const loginController = async (req, res, next) => {
         }
 
         const isPasswordCorrect = await comparePassword(password,userRes.password)
-
+        
         if(!isPasswordCorrect) {
             return next({statusCode:401, message:'Either password or email is not correct'})
         }

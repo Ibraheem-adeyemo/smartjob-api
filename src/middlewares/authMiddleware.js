@@ -89,7 +89,7 @@ export const isAuthenticated = async (req, res, next) => {
         }          
         res.locals.user = user;
         next()
-        return user
+        // return user
     } catch (error) {
         next(error)
     }
@@ -98,7 +98,8 @@ export const isAuthenticated = async (req, res, next) => {
 export const isUserVerifiedAndAuthenticated = async (req, res, next) => {
     try {
         
-        const user = await isAuthenticated(req, res, next)
+        const user = res.locals.user
+        // const user = await isAuthenticated(req, res, next)
         if(!user.isVerified) {
             return next({statusCode:400, message:ACCOUNT_HAS_NOT_BEEN_VERIFIED})
         }
@@ -159,7 +160,6 @@ export const isPhoneNumberAlreadyExist = async (req, res, next) => {
         
         next()
     } catch (error) {
-        console.log(error)
         next(error)
     }
 }
