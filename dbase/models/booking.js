@@ -36,6 +36,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    isAvailable: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     date: {
         type: DataTypes.DATE,
         allowNull:false
@@ -60,9 +64,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
-    isAvailable: {
+    isActive: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false
+        defaultValue: true
     }
     // need to remove this
     // bookedBy: {

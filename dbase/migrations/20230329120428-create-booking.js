@@ -26,6 +26,10 @@ module.exports = {
         type:Sequelize.BOOLEAN,
         defaultValue:false
       },
+      isAvailable: {
+        type:Sequelize.BOOLEAN,
+        defaultValue:false
+      },
       date: {
         type: Sequelize.DATE,
         allowNull:false
@@ -50,9 +54,9 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
-      isAvailable: {
+      isActive: {
         type: Sequelize.BOOLEAN,
-        defaultValue: false
+        defaultValue: true
       },
       bookedBy: {
         type: Sequelize.INTEGER,
